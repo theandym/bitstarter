@@ -1,7 +1,7 @@
 {
-  "name": "node-js-sample",
+  "name": "bitstarter",
   "version": "0.0.1",
-  "description": "a sample node.js app for heroku",
+  "description": "a simple node.js crowdfunding app",
   "main": "web.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,8 @@
   "dependencies": {
     "express": "2.5.x",
     "cheerio": "0.12.x",
-    "commander": "1.3.0"
+    "commander": "1.3.x",
+    "restler": "2.0.x"
   },
   "engines": {
     "node": "0.8.x",
@@ -17,13 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-sample"
+    "url": "https://github.com/theandym/bitstarter"
   },
   "keywords": [
     "node",
     "heroku"
   ],
-  "author": "Mark Pundsack",
-  "license": "BSD",
-  "gitHead": "90fd58e343c29e54fc1d4e19036595500b2bdc21"
+  "author": "Andy Macdonald",
+  "license": "MIT"
 }

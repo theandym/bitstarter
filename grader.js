@@ -21,10 +21,11 @@ References:
     - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
 */
 
+var util = require('util');
 var fs = require('fs');
+var rest = require('restler');
 var program = require('commander');
 var cheerio = require('cheerio');
-var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
 
 var assertFileExists = function(infile) {
@@ -36,8 +37,8 @@ var assertFileExists = function(infile) {
   return instr;
 };
 
-var cheerioHtmlFile = function(htmlfile) {
-  return cheerio.load(fs.readFileSync(htmlfile));
+var loadLocalHtml = function(file) {
+  return fs.readFileSync(file);
 };
 
 var loadChecks = function(checksfile) {
@@ -45,7 +46,7 @@ var loadChecks = function(checksfile) {
 };
 
 var checkHtmlFile = function(htmlfile, checksfile) {
-  $ = cheerioHtmlFile(htmlfile);
+  $ = cheerio.load(htmlfile);
   var checks = loadChecks(checksfile).sort();
   var out = {};
   for(var ii in checks) {
@@ -53,6 +54,12 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     out[checks[ii]] = present;
   }
   return out;
+};
+
+
+var returnResults = function(json) {
+  var outJson = JSON.stringify(json, null, 4);
+  console.log(outJson);
 };
 
 var clone = function(fn) {
@@ -64,11 +71,34 @@ var clone = function(fn) {
 if(require.main == module) {
   program
     .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-    .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+    .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists))
+    .option('-u, --url <url_path>', 'Path to URL')
     .parse(process.argv);
-  var checkJson = checkHtmlFile(program.file, program.checks);
+
+  var checkJson;
+
+  if(program.file) {
+    checkJson = checkHtmlFile(program.file, program.checks);
+    returnResults(checkJson);
+  } else if(program.url) {
+    rest.get(program.url).on('complete', function(result, response) {
+      if (result instanceof Error) {
+        console.log("Error with URL.");
+        process.exit(1);
+      } else {
+        checkJson = checkHtmlFile(result, program.checks);
+        returnResults(checkJson);
+      }
+    });
+
+  } else {
+    console.log("Error: Reference a file or a URL");
+    process.exit(1);
+  };
+
   var outJson = JSON.stringify(checkJson, null, 4);
   console.log(outJson);
+
 } else {
   exports.checkHtmlFile = checkHtmlFile;
 }
